@@ -186,3 +186,106 @@ class ActionGenerateResponse(BaseModel):
     content: str
     sources: List[str] = []
     confidence: float
+
+
+# =========================================================================
+# WebRAG — Intelligent Website Mining & Question Answering System Schemas
+# =========================================================================
+
+class WebCrawlRequest(BaseModel):
+    url: str
+    max_pages: Optional[int] = 30
+    max_depth: Optional[int] = 2
+
+
+class WebCrawlResponse(BaseModel):
+    jobId: str
+    websiteId: str
+    status: str
+    message: str
+
+
+class WebJobStatusResponse(BaseModel):
+    jobId: str
+    websiteId: str
+    startUrl: str
+    status: str
+    progress: int
+    crawledCount: int
+    maxPages: int
+    currentUrl: Optional[str] = None
+    currentTitle: Optional[str] = None
+    error: Optional[str] = None
+
+
+class WebPageItem(BaseModel):
+    url: str
+    title: str
+    wordCount: int
+    chunkCount: int
+    language: str
+    timestamp: str
+
+
+class WebCitationItem(BaseModel):
+    index: int
+    url: str
+    title: str
+    snippet: str
+    distance: Optional[float] = None
+
+
+class WebChatRequest(BaseModel):
+    website_id: str
+    query: str
+    top_k: Optional[int] = 5
+
+
+class WebChatResponse(BaseModel):
+    websiteId: str
+    query: str
+    answer: str
+    confidence: float
+    citations: List[WebCitationItem]
+    retrievalLatencyMs: float
+    totalLatencyMs: float
+    reasoning: str
+
+
+class WebsiteSummaryItem(BaseModel):
+    websiteId: str
+    domain: str
+    startUrl: str
+    totalPages: int
+    totalChunks: int
+    totalWords: int
+    createdAt: str
+    status: str
+
+
+class WebWordFrequencyItem(BaseModel):
+    word: str
+    count: int
+
+
+class WebContentDistributionItem(BaseModel):
+    url: str
+    title: str
+    word_count: int
+    chunk_count: int
+
+
+class WebStatsResponse(BaseModel):
+    websiteId: str
+    totalWebsites: int
+    totalPages: int
+    totalWords: int
+    totalChunks: int
+    averageWordsPerPage: float
+    topWords: List[WebWordFrequencyItem]
+    contentDistribution: List[WebContentDistributionItem]
+    averageRetrievalLatencyMs: float
+    averageConfidence: float
+    totalQueriesLogged: int
+    wordFrequencyChartBase64: Optional[str] = ""
+    contentDistributionChartBase64: Optional[str] = ""

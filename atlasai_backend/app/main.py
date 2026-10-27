@@ -1,8 +1,14 @@
+import os
 import uuid
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+# Force transformers/torch backend and disable TF conflict
+os.environ["USE_TF"] = "0"
+os.environ["USE_TORCH"] = "1"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
 
 from app.orchestrator import orchestrator
 from app.models.schemas import (
@@ -33,8 +39,9 @@ from app.services import action_engine
 from app.services import document_relationships
 from app.services import document_store
 from app.services.chroma_client import get_documents_collection
+from app.routers import web_mining
 
-app = FastAPI(title="AskHTE Backend")
+app = FastAPI(title="WebRAG – Intelligent Website Mining and Question Answering System")
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,6 +49,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(web_mining.router)
+
 
 
 @app.get("/ping")

@@ -24,11 +24,17 @@ is the change directly, not a config flag — main.py's call site is
 unchanged (still one embed_batch(docs) call); the batching happens
 inside this function so nothing else needs to know about it.
 """
+import os
+os.environ["USE_TF"] = "0"
+os.environ["USE_TORCH"] = "1"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 import asyncio
 import gc
 from typing import List
 
 from sentence_transformers import SentenceTransformer
+
 
 _model = None
 

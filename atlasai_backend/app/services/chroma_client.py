@@ -44,3 +44,18 @@ def get_documents_collection():
         )
 
     return _documents_collection
+
+
+_web_collection = None
+
+
+def get_web_collection():
+    """ChromaDB collection dedicated to crawled website content."""
+    global _web_collection
+    if _web_collection is None:
+        _web_collection = get_client().get_or_create_collection(
+            name="web_documents",
+            metadata={"hnsw:space": "cosine"},
+        )
+    return _web_collection
+

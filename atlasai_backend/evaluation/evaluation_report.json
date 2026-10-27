@@ -1,0 +1,120 @@
+{
+  "benchmark_timestamp": "2026-10-27T08:58:14.526660+00:00",
+  "total_test_queries": 5,
+  "mean_precision_at_1": 1.0,
+  "mean_precision_at_3": 0.333,
+  "mean_precision_at_5": 0.2,
+  "mean_recall_at_1": 1.0,
+  "mean_recall_at_3": 1.0,
+  "mean_recall_at_5": 1.0,
+  "mean_reciprocal_rank_mrr": 1.0,
+  "average_retrieval_latency_ms": 372.49,
+  "average_answer_correctness": 0.386,
+  "query_results": [
+    {
+      "query": "What are the three main categories of web data mining?",
+      "relevant_urls": [
+        "https://webrag-benchmark.org/web-mining-overview"
+      ],
+      "retrieved_urls": [
+        "https://webrag-benchmark.org/web-mining-overview",
+        "https://webrag-benchmark.org/crawler-architecture",
+        "https://webrag-benchmark.org/rag-pipeline"
+      ],
+      "p@1": 1.0,
+      "p@3": 0.33,
+      "p@5": 0.2,
+      "r@1": 1.0,
+      "r@3": 1.0,
+      "r@5": 1.0,
+      "rr": 1.0,
+      "latency_ms": 622.21,
+      "answer_correctness": 0.33,
+      "answer_preview": "Extractive retrieval fallback (LLM offline: GROQ_API_KEY not set):\n\nWeb data mining is the application of data mining te..."
+    },
+    {
+      "query": "How do web crawlers prevent SSRF vulnerabilities and respect website rules?",
+      "relevant_urls": [
+        "https://webrag-benchmark.org/crawler-architecture"
+      ],
+      "retrieved_urls": [
+        "https://webrag-benchmark.org/crawler-architecture",
+        "https://webrag-benchmark.org/web-mining-overview",
+        "https://webrag-benchmark.org/vector-search"
+      ],
+      "p@1": 1.0,
+      "p@3": 0.33,
+      "p@5": 0.2,
+      "r@1": 1.0,
+      "r@3": 1.0,
+      "r@5": 1.0,
+      "rr": 1.0,
+      "latency_ms": 369.49,
+      "answer_correctness": 0.2,
+      "answer_preview": "Extractive retrieval fallback (LLM offline: GROQ_API_KEY not set):\n\nAutonomous web crawlers must adhere to ethical crawl..."
+    },
+    {
+      "query": "What are the core stages in a website RAG pipeline?",
+      "relevant_urls": [
+        "https://webrag-benchmark.org/rag-pipeline"
+      ],
+      "retrieved_urls": [
+        "https://webrag-benchmark.org/rag-pipeline",
+        "https://webrag-benchmark.org/evaluation-metrics",
+        "https://webrag-benchmark.org/web-mining-overview"
+      ],
+      "p@1": 1.0,
+      "p@3": 0.33,
+      "p@5": 0.2,
+      "r@1": 1.0,
+      "r@3": 1.0,
+      "r@5": 1.0,
+      "rr": 1.0,
+      "latency_ms": 321.34,
+      "answer_correctness": 0.4,
+      "answer_preview": "Extractive retrieval fallback (LLM offline: GROQ_API_KEY not set):\n\nRetrieval-Augmented Generation (RAG) combines dense ..."
+    },
+    {
+      "query": "Why is cosine distance used in ChromaDB for semantic retrieval?",
+      "relevant_urls": [
+        "https://webrag-benchmark.org/vector-search"
+      ],
+      "retrieved_urls": [
+        "https://webrag-benchmark.org/vector-search",
+        "https://webrag-benchmark.org/rag-pipeline",
+        "https://webrag-benchmark.org/evaluation-metrics"
+      ],
+      "p@1": 1.0,
+      "p@3": 0.33,
+      "p@5": 0.2,
+      "r@1": 1.0,
+      "r@3": 1.0,
+      "r@5": 1.0,
+      "rr": 1.0,
+      "latency_ms": 279.21,
+      "answer_correctness": 0.5,
+      "answer_preview": "Extractive retrieval fallback (LLM offline: GROQ_API_KEY not set):\n\nChromaDB serves as an open-source persistent vector ..."
+    },
+    {
+      "query": "How are Precision@k, Recall@k, and MRR defined for search evaluation?",
+      "relevant_urls": [
+        "https://webrag-benchmark.org/evaluation-metrics"
+      ],
+      "retrieved_urls": [
+        "https://webrag-benchmark.org/evaluation-metrics",
+        "https://webrag-benchmark.org/rag-pipeline",
+        "https://webrag-benchmark.org/vector-search"
+      ],
+      "p@1": 1.0,
+      "p@3": 0.33,
+      "p@5": 0.2,
+      "r@1": 1.0,
+      "r@3": 1.0,
+      "r@5": 1.0,
+      "rr": 1.0,
+      "latency_ms": 270.21,
+      "answer_correctness": 0.5,
+      "answer_preview": "Extractive retrieval fallback (LLM offline: GROQ_API_KEY not set):\n\nStandard metrics for evaluating RAG retrieval system..."
+    }
+  ]
+}
