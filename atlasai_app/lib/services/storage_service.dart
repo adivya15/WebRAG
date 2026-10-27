@@ -23,7 +23,7 @@ class StorageService {
   final String backendBaseUrl;
 
   StorageService({
-    this.backendBaseUrl = 'https://askhte.onrender.com',
+    this.backendBaseUrl = 'http://10.201.169.154:8000',
   });
 
   

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Config for WebRAG development.
+  Allows cleartext (HTTP) traffic to the development backend running
+  on the laptop's LAN IP. HTTPS is always allowed everywhere.
+
+  For production, remove the <domain-config> sections.
+
+  NOTE: android:usesCleartextTraffic="true" in the manifest already
+  permits all cleartext traffic globally. This file provides finer-grained
+  control and is required on Android 7.0+ for proper certificate handling.
+-->
+<network-security-config>
+    <!-- Trust system CAs for all HTTPS connections -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

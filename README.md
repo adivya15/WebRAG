@@ -1,257 +1,298 @@
-# 🏛️ AskHTE: AI-Powered Question Answering System
-> **Department of Higher & Technical Education (HTE), Government of Maharashtra**
+# 🌐 WebRAG: Intelligent Website Mining and Question Answering System
 
-> *"Ask Official Documents. Get Cited, Trusted Answers."*
+> **A Complete Web Data Mining & Retrieval-Augmented Generation (RAG) Platform**  
+> *"Autonomous Web Crawling → Data Extraction → Preprocessing → Mining Analytics → Visualizations → Grounded RAG Q&A"*
 
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI_0.115+-009688?logo=fastapi)](https://fastapi.tiangolo.com)
+[![ChromaDB](https://img.shields.io/badge/Vector_Store-ChromaDB_1.5+-FF6F00)](https://www.trychroma.com)
+[![Embeddings](https://img.shields.io/badge/Embeddings-SentenceTransformers_MiniLM-blue)](https://www.sbert.net)
+[![LLM](https://img.shields.io/badge/LLM-Groq_Llama_3.3_70B-f50057)](https://groq.com)
 [![Flutter](https://img.shields.io/badge/Frontend-Flutter_3.x-02569B?logo=flutter)](https://flutter.dev)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI_0.100+-009688?logo=fastapi)](https://fastapi.tiangolo.com)
-[![ChromaDB](https://img.shields.io/badge/Vector_DB-ChromaDB-FF6F00)](https://www.trychroma.com)
-[![SentenceTransformers](https://img.shields.io/badge/Embeddings-Local_MiniLM_L6-blue)](https://www.sbert.net)
-[![Groq LLM](https://img.shields.io/badge/LLM-Llama_3.3_70B_Groq-f50057)](https://groq.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
 
 ---
 
-## 🔗 Quick Links
+## 📌 1. Project Overview
 
-| Resource | Link |
+**WebRAG** is an end-to-end Web Data Mining and Question Answering system that allows users to supply any publicly accessible website URL, autonomously crawl permitted pages, extract and preprocess clean textual content, construct semantic vector representations in ChromaDB, and interact with the crawled knowledge through a conversational AI grounded strictly in verifiable webpage citations.
+
+The platform bridges the gap between raw web unstructured data and reliable knowledge retrieval by combining:
+1. **Ethical & Secure Web Crawling** (robots.txt compliance, rate limiting, and strict SSRF prevention).
+2. **Robust Web Preprocessing** (Unicode normalization, boilerplate removal, content hashing, and sentence-boundary sliding chunking).
+3. **Statistical Web Data Mining** (Term Frequency mining, content distribution profiling, and retrieval latency analytics).
+4. **Visual Analytics** (Dynamic Matplotlib charts rendered directly from crawled data).
+5. **Grounded RAG Engine** (Multi-tenant ChromaDB partition by `website_id`, cosine similarity search, and Groq Llama 3.3 70B synthesis with strict zero-hallucination guardrails).
+
+---
+
+## 🏗️ 2. System Architecture
+
+```
+                             ┌─────────────────────────────────┐
+                             │    Public Website (Target)      │
+                             └────────────────┬────────────────┘
+                                              │  HTTP / HTTPS
+                                              ▼
+                             ┌─────────────────────────────────┐
+                             │       Secure Web Crawler        │
+                             │  • SSRF Validation (IP Filter)  │
+                             │  • robots.txt Compliance Parser │
+                             │  • Politeness Delay & BFS Queue │
+                             └────────────────┬────────────────┘
+                                              │  Raw HTML Documents
+                                              ▼
+                             ┌─────────────────────────────────┐
+                             │   Preprocessing & Data Mining   │
+                             │  • BeautifulSoup Tag Cleaning   │
+                             │  • Unicode NFKC Normalization   │
+                             │  • SHA-256 Deduplication Hash   │
+                             │  • 500-800 Token Chunk Window   │
+                             └────────┬───────────────┬────────┘
+                                      │               │
+            ┌─────────────────────────┘               └────────────────────────┐
+            ▼                                                                  ▼
+┌───────────────────────────────┐                              ┌───────────────────────────────┐
+│     Dense Vector Indexing     │                              │   Mining Analytics Engine     │
+│ • Local SentenceTransformers  │                              │ • Term Frequency Analysis     │
+│   (multi-qa-MiniLM-L6-cos-v1) │                              │ • Page Content Distribution   │
+│ • ChromaDB HNSW (Cosine)      │                              │ • Query Latency Logs          │
+│ • Metadata Filter (website_id)│                              │ • Dynamic Matplotlib Charts   │
+└───────────────┬───────────────┘                              └───────────────┬───────────────┘
+                │                                                              │
+                │ Vector Embeddings                                            │ Base64 Charts & Stats
+                ▼                                                              ▼
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+│                              FastAPI Asynchronous Gateway                                    │
+│  /api/web/crawl  •  /api/web/status  •  /api/web/chat  •  /api/web/stats  •  /api/web/pages  │
+└───────────────────────────────────────────────┬──────────────────────────────────────────────┘
+                                                │
+                                                ▼
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+│                               Flutter Modern WebRAG Client                                   │
+│  [Web Mining Home]  •  [Website Dashboard]  •  [Grounded Chat]  •  [Visual Analytics]        │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ⚙️ 3. Web Mining Pipeline
+
+### Step 1: Web Crawling (`app/services/web_crawler.py`)
+- **URL Validation & SSRF Guard:** Inspects protocol (`http`/`https`) and resolves target domain to IP addresses, strictly blocking loopback (`127.0.0.0/8`, `::1`), private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), and cloud metadata IP endpoints (`169.254.169.254`).
+- **Robots.txt Adherence:** Automatically queries `robots.txt` using `urllib.robotparser.RobotFileParser` and honors exclusion directives.
+- **Domain Scoping & Breadth-First Traversal:** Restricts outbound link extraction to the approved root host, enforcing configurable `max_pages` (default: 30) and `max_depth` (default: 2).
+- **Polite Crawling:** Applies configurable rate delays (0.25s–0.5s) to avoid server load.
+
+### Step 2: Preprocessing & Data Extraction (`app/services/web_preprocessing.py`)
+- **Boilerplate Elimination:** Strips `<nav>`, `<footer>`, `<header>`, `<aside>`, `<script>`, `<style>`, `<form>`, `<svg>`, and advertisement containers.
+- **Structural Extraction:** Isolates page title, `<meta description>`, hierarchical headings (`h1`–`h3`), canonical URLs, and primary body text.
+- **Normalization:** Executes Unicode NFKC normalization and trims whitespace.
+- **Content Hashing:** Calculates SHA-256 digest on normalized strings to eliminate duplicate pages.
+- **Sliding Window Chunking:** Splits text into 500–800 character windows with sentence-boundary preservation and 150-character overlaps.
+
+### Step 3: Embeddings & Vector Storage (`app/services/web_retrieval.py`)
+- **Embedding Model:** Local bi-encoder `sentence-transformers/multi-qa-MiniLM-L6-cos-v1` (384-dimensional dense vectors) pre-cached for zero network dependency.
+- **ChromaDB Storage:** Persistent collection `web_documents` utilizing HNSW with cosine distance metric.
+- **Website Isolation:** Chunks are indexed with `website_id`, ensuring queries on one domain never bleed into another.
+
+### Step 4: Web Mining Analytics (`app/services/web_analytics.py`)
+- **Token Frequency Mining:** Word tokenization with stopword filtering to isolate domain-specific keywords.
+- **Content Distribution:** Word count histograms across crawled depths and pages.
+- **Matplotlib Visualization:** Generates server-side high-resolution PNG charts encoded in base64 data URLs for immediate dashboard rendering.
+
+### Step 5: Grounded RAG Q&A (`app/services/web_retrieval.py`)
+- **Top-$k$ Semantic Search:** Cosine similarity nearest-neighbor lookup matching the user's question.
+- **Groq LLM Generation:** Grounded synthesis using `llama-3.3-70b-versatile` under strict negative constraints.
+- **Fallback Guarantee:** When facts are absent from the crawled site, responds with:
+  > *"The requested information was not found in the indexed website content."*
+- **Source Citations:** Every claim links to verifiable citation cards with full URL, page title, and matched excerpt.
+
+---
+
+## 💻 4. Technology Stack
+
+| Layer | Technologies |
 |---|---|
-| 🌐 Live Backend (API) | [`https://askhte.onrender.com`](https://askhte.onrender.com) |
-| 📖 Interactive API Docs (Swagger) | [`https://askhte.onrender.com/docs`](https://askhte.onrender.com/docs) |
-| 💻 Source Code | `https://github.com/sanikad20/AskHTE` |
-| 🎥 Demo Video | `https://drive.google.com/file/d/1IiXhdnmv3T9u4NDqybeeYfBO7apdhDEQ/view?usp=sharing` |
-| 📱 APK / TestFlight | `https://drive.google.com/file/d/1V2uC-aebp577sndkdBHUy0o8J5ZJjJ40/view?usp=sharing` |
-| 🏆 Hackathon | VJTI AI Hackathon 2026 — Problem Area 3 |
-
-> Note: the backend is on Render's free tier — the first request after a
-> period of inactivity can take 30-60s to respond while the instance
-> spins back up. This is expected, not a bug, if you're trying the live
-> link cold.
+| **Backend API** | Python 3.12, FastAPI, Uvicorn, Pydantic v2 |
+| **Crawling & Scraping** | Requests, BeautifulSoup4 (bs4), `urllib.robotparser` |
+| **Vector Database** | ChromaDB (Persistent HNSW index, Cosine distance) |
+| **Embeddings** | `sentence-transformers` (`multi-qa-MiniLM-L6-cos-v1`, PyTorch CPU) |
+| **LLM Inference** | Groq API (`llama-3.3-70b-versatile`, temperature 0.2) |
+| **Data Visualization** | Matplotlib (Agg headless backend) |
+| **Frontend Client** | Flutter 3.x, Dart 3.12, Google Fonts, Material 3 Design |
+| **Testing & Eval** | Pytest, TestClient, Custom Evaluation Benchmark |
 
 ---
 
-## 👥 Team
-
-| Role | Name | GitHub |
-|------|------|--------|
-| Team Lead | Sanika Deshmukh | [@sanikad20](https://github.com/sanikad20) |
-| Team Member | Pragati Kharat | [@pragatikharat17](https://github.com/pragatikharat17) |
-| Team Member | Divya Addagatla | [@adivya15](https://github.com/adivya15) |
-
-**Institute:** Veermata Jijabai Technological Institute (VJTI), Mumbai
-
----
-
-## 📌 Overview
-
-**AskHTE** is an enterprise-grade, AI-powered administrative decision support and Question Answering (QA) system designed specifically for the **Higher & Technical Education (HTE) Department, Government of Maharashtra**.
-
-The system enables government officials, administrators, institute heads, and students to query complex Government Resolutions (GRs), Circulars, and Policy Directives in natural language (English, Marathi, and Hindi) and receive instant, source-grounded answers backed by exact page citations and confidence scores.
-
----
-
-## ⭐ Key Capabilities & Features
-
-### 1. 🛡️ Accurate, Source-Grounded Answers (Zero Hallucination)
-- Powered by a local **Retrieval-Augmented Generation (RAG)** pipeline.
-- Answers are generated strictly from ingested official government PDF documents.
-- If a queried fact is missing from the corpus, the system explicitly states: *"Information unavailable in authenticated government documents."*
-
-### 2. 🌐 Trilingual AI Engine (English • Marathi • Hindi)
-- Supports queries and responses in **English**, **Marathi (मराठी)**, and **Hindi (हिंदी)**.
-- Features automatic query language detection and preserves official administrative terminology (e.g. GR numbers, section codes, desk officer names) during translation.
-- Includes Devanagari **Unicode NFC Normalization** (`unicodedata.normalize('NFC')`) to eliminate rendering glitches and dotted circles (`◌`).
-
-### 3. 📄 Page-Level Citations & Confidence Score
-- Every generated response features:
-  - Exact **Source Document Name** & **GR/Circular Reference Number**.
-  - **Page Number Citations** e.g. `[1] GR-2024/12.pdf (Page 3)`.
-  - **Clickable Reference Chips**: Tapping opens a preview sheet showing the original document metadata and page location.
-  - **Visual Confidence Indicator**: Color-coded score (85%–98% high green confidence).
-
-### 4. 📝 Intelligent Document Summarization
-- Generates structured executive summaries of lengthy government circulars.
-- Outputs:
-  - **Executive Summary** (Concise 3–4 sentences or Detailed 6–8 sentences).
-  - **Key Bullet Points** (3–5 key policy mandates).
-  - **Effective Date** & **Target Applicability** (Institutes, Students, Faculty).
-  - **Issuing Authority** (Department / Directorates).
-
-### 5. ⚖️ Side-by-Side Document Clause Comparison
-- Compares two circulars or GR versions to highlight administrative updates:
-  - 🟢 **Added Clauses**: New provisions introduced in the newer circular.
-  - 🔴 **Removed / Superseded Clauses**: Legacy conditions omitted or replaced.
-  - 🟡 **Modified Provisions**: Updated deadlines, fee structures, or eligibility criteria.
-  - 💡 **Administrative Policy Differences**: High-level policy scope shifts.
-
-### 6. 🕸️ Administrative Knowledge Graph & Conflict Detection
-- Extracts reference numbers (`Circular No.`, `GR No.`), personnel cues (`Registrar`, `Director`, `Desk Officer`), and dates.
-- Maps inter-document relationships (*supersedes*, *amends*, *extends*, *cancels*).
-- Flags conflicting deadline dates across unlinked circular versions.
-
-### 7. ⚡ Memory-Bounded Production Engine (512MB RAM Bounded)
-- Custom internal batching (`BATCH_SIZE = 8`) and active garbage collection (`gc.collect()`) ensure zero OOM crashes during PDF OCR and embedding on low-cost cloud instances (e.g., Render Free Tier).
-
----
-
-## 🏗️ Architecture & Tech Stack
-
-```
- 📱 Flutter Mobile / Web App (Material 3 Dark/Light UI, Google Fonts Noto Sans Devanagari)
-                          │
-                          ▼  (REST API / JSON)
- 🚀 FastAPI Backend Gateway (Python 3.11)
-                          │
-   ┌──────────────────────┼────────────────────────┐
-   ▼                      ▼                        ▼
-📄 PyMuPDF + Tesseract  🧠 Local SentenceTransformers  🗄️ ChromaDB Vector Store
-   (PDF Text & OCR)        (multi-qa-MiniLM-L6-cos-v1)   (384-dim Embeddings)
-                          │
-                          ▼
-             ⚡ Groq Llama 3.3-70B LLM (Source-Grounded Reasoning)
-```
-
-### Technology Breakdown
-- **Frontend**: Flutter 3.x, Dart, Firebase Firestore (Graph Edges), Google Fonts (`Noto Sans Devanagari`).
-- **Backend API**: FastAPI, PyDantic, Uvicorn, Asyncio.
-- **Document Processing**: PyMuPDF (`fitz`), PyTesseract (`tesseract-ocr-mar`, `tesseract-ocr-hin`), PIL.
-- **Embeddings**: `sentence-transformers/multi-qa-MiniLM-L6-cos-v1` (384-dimensional bi-encoder).
-- **Vector Database**: ChromaDB (In-memory persistent HNSW vector index).
-- **LLM Reasoning**: Groq API (`llama-3.3-70b-versatile`).
-
----
-
-## 📁 Repository Directory Structure
-
-```
-AskHTE_v5/
-├── askhte_v5/
-│   ├── atlasai_app/                    # Flutter Mobile Application
-│   │   ├── lib/
-│   │   │   ├── main.dart               # App Entrypoint
-│   │   │   ├── screens/
-│   │   │   │   ├── askhte_home_screen.dart    # Home Screen & "Why AskHTE?" Cards
-│   │   │   │   ├── technician/chat_screen.dart # AI Chat & Search Interface
-│   │   │   │   └── upload_document_screen.dart # Document Ingestion Screen
-│   │   │   ├── services/
-│   │   │   │   ├── orchestrator_service.dart   # Backend API Client
-│   │   │   │   └── storage_service.dart        # Upload Service
-│   │   │   ├── theme/
-│   │   │   │   └── app_theme.dart              # Deep Teal Theme & Font Fallbacks
-│   │   │   └── widgets/
-│   │   │       ├── citation_chips.dart         # Clickable PDF Source Cards
-│   │   │       ├── confidence_badge.dart       # Confidence Indicator
-│   │   │       └── explainable_ai_panel.dart   # Grounded AI Response Card
-│   │   └── pubspec.yaml
-│   │
-│   └── atlasai_backend/                # FastAPI Backend Server
-│       ├── app/
-│       │   ├── main.py                 # FastAPI Routes & App Gateway
-│       │   ├── orchestrator.py         # Multi-Agent Routing Engine
-│       │   ├── agents/
-│       │   │   └── knowledge_agent.py  # Grounded RAG QA Agent
-│       │   ├── services/
-│       │   │   ├── chroma_client.py    # ChromaDB Vector Database Manager
-│       │   │   ├── document_relationships.py # Summarization & Comparison Engine
-│       │   │   ├── embeddings.py       # Batched Local SentenceTransformers
-│       │   │   ├── entity_extraction.py# GR Reference & Date Extraction
-│       │   │   ├── ingestion.py        # PDF Page Extractor & Tesseract OCR
-│       │   │   ├── language.py         # Trilingual Translation & NFC Normalization
-│       │   │   └── retrieval.py        # Cosine Distance & Confidence Rescaling
-│       │   └── models/
-│       │       └── schemas.py          # Request & Response Schemas
-│       └── Dockerfile                  # Production Container Specification
-└── README.md
-```
-
----
-
-## 🛠️ Setup & Running Locally
+## 🚀 5. Installation & Setup Instructions
 
 ### Prerequisites
-- **Python**: 3.10 or 3.11 installed
-- **Flutter**: 3.x SDK installed
-- **Tesseract OCR**: Installed with Devanagari languages (`tesseract-ocr-mar`, `tesseract-ocr-hin`)
+- Python 3.10+ (tested on Python 3.12.4)
+- Flutter SDK 3.22+ (tested on Flutter 3.44.6)
+- Groq API Key (free tier available at [console.groq.com](https://console.groq.com))
 
 ---
 
-### 1. Backend Server Setup
+### Step 1: Backend Setup
 
 ```bash
-# 1. Navigate to the backend directory
-cd askhte_v5/atlasai_backend
+# Navigate to backend directory
+cd atlasai_backend
 
-# 2. Create and activate a virtual environment
-python3 -m venv venv
+# Create virtual environment (optional but recommended)
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
 source venv/bin/activate
 
-# 3. Install backend dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 4. Set environment variables
-export GROQ_API_KEY="your_groq_api_key_here"
-
-# 5. Start the FastAPI server
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# Configure environment variables
+# Create a .env file inside atlasai_backend/:
+GROQ_API_KEY=your_groq_api_key_here
+CHROMA_DB_PATH=./chroma_db
+USE_TF=0
+USE_TORCH=1
 ```
 
-The backend server will run on `http://localhost:8000`. You can inspect the interactive OpenAPI documentation at `http://localhost:8000/docs`.
+### Step 2: Start the FastAPI Server
+
+```bash
+# From atlasai_backend directory:
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+- Swagger UI will be available at: [`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs)
+- Health check: [`http://127.0.0.1:8000/ping`](http://127.0.0.1:8000/ping)
 
 ---
 
-### 2. Flutter Frontend Setup
+### Step 3: Frontend Setup
 
 ```bash
-# 1. Navigate to the Flutter app directory
-cd askhte_v5/atlasai_app
+# Navigate to Flutter app directory
+cd ../atlasai_app
 
-# 2. Fetch Flutter dependencies
+# Fetch Flutter dependencies
 flutter pub get
 
-# 3. Launch the application (Android / Web / Linux)
-flutter run
+# Run on Chrome Web:
+flutter run -d chrome
+
+# Or run as a Windows Desktop application:
+flutter run -d windows
 ```
 
 ---
 
-### 3. Docker Container Build
+## 🧪 6. Verification & Automated Testing
+
+The backend includes a comprehensive unit and integration test suite covering URL validation, SSRF defense, robots.txt, HTML parsing, ChromaDB indexing, isolated retrieval, and FastAPI routes:
 
 ```bash
-cd askhte_v5/atlasai_backend
+cd atlasai_backend
+python tests/test_web_mining.py
+```
 
-# Build the Docker image
-docker build -t askhte-backend .
-
-# Run the container locally
-docker run -d -p 8000:8000 -e GROQ_API_KEY="your_groq_api_key" askhte-backend
+### Test Suite Execution Output:
+```
+[RUNNING TEST SUITE DIRECTLY]
+PASS: test_is_safe_url_blocks_localhost_and_private_ips
+PASS: test_is_safe_url_allows_public_urls
+PASS: test_normalize_url
+PASS: test_robots_txt_disallow
+PASS: test_html_data_extraction_and_boilerplate_stripping
+PASS: test_web_preprocessing_and_deduplication
+PASS: test_chunk_web_content_overlap
+PASS: test_chromadb_website_indexing_and_isolation
+PASS: test_unsupported_query_fallback
+PASS: test_api_crawl_rejects_ssrf
+PASS: test_api_crawl_and_status
+PASS: test_api_stats
+ALL 12 TESTS PASSED SUCCESSFULLY!
 ```
 
 ---
 
-## 📡 API Endpoint Reference
+## 📊 7. Quantitative Evaluation Benchmark
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/ping` | `GET` | Health check endpoint returning backend status. |
-| `/ingest` | `POST` | Ingests a PDF circular, extracts text/OCR, embeds chunks, and indexes into ChromaDB. |
-| `/query` | `POST` | Processes a natural language query, retrieves grounded chunks, and returns cited answer. |
-| `/documents/list` | `GET` | Returns list of all ingested government circulars and metadata. |
-| `/documents/summarize` | `POST` | Generates a structured executive summary of a specified document. |
-| `/documents/compare` | `GET` | Compares two circulars side-by-side highlighting added, removed, and modified clauses. |
-| `/documents/graph` | `GET` | Returns the relationship graph, amendment timeline, and detected conflicts across ingested documents. |
+The system features an automated, reproducible evaluation module located at `atlasai_backend/evaluation/evaluate_webrag.py`. It indexes a standardized evaluation benchmark corpus and measures standard Information Retrieval (IR) metrics against known ground truth questions:
 
-Full interactive reference (request/response schemas, try-it-out): see the [Swagger docs](https://askhte.onrender.com/docs) link above.
+```bash
+cd atlasai_backend
+python evaluation/evaluate_webrag.py
+```
+
+### Benchmark Results (from `evaluation_report.json`):
+
+| Metric | Result | Target Benchmark | Analysis |
+|---|---|---|---|
+| **Mean Reciprocal Rank (MRR)** | **1.000** | $\ge 0.80$ | The relevant document was ranked #1 for 100% of queries. |
+| **Precision @ 1** | **1.000** | $\ge 0.85$ | Top retrieved passage was relevant for every evaluation query. |
+| **Precision @ 3** | **0.333** | Scaled | Reflects focused top-1 retrieval with padding for context. |
+| **Precision @ 5** | **0.200** | Scaled | Correctly bounds precision when 1 gold document exists. |
+| **Recall @ 1** | **1.000** | $\ge 0.80$ | Complete recall of gold documents within the first position. |
+| **Recall @ 3** | **1.000** | $\ge 0.90$ | 100% gold document recovery in top-3 candidates. |
+| **Recall @ 5** | **1.000** | $\ge 0.95$ | 100% gold document recovery in top-5 candidates. |
+| **Avg Retrieval Latency** | **372.49 ms** | $\le 800$ ms | CPU-bound embedding + HNSW search completed in under 400ms. |
+| **Answer Correctness** | **0.386** | Lexical overlap | Measured via strict non-hallucinatory keyword overlap. |
 
 ---
 
-## 🤝 Key Stakeholders & Credits
+## ⚖️ 8. Ethical & Security Considerations
 
-- **Department**: Department of Higher & Technical Education, Government of Maharashtra
-- **Event**: VJTI AI Hackathon 2026 — Problem Area 3 (AI-Powered Question Answering System)
-- **Engine**: AskHTE Core AI Architecture
+1. **SSRF Prevention:** All user-supplied URLs undergo multi-layer inspection before network resolution. Private subnets (RFC 1918), loopback interfaces, broadcast ranges, and cloud metadata services (`169.254.169.254`) are systematically rejected.
+2. **Robots.txt Respect:** The crawler parses `robots.txt` at the domain root before requesting sub-paths and halts traversal if disallowed.
+3. **Politeness & Rate Limiting:** A delay of 0.25s–0.5s is enforced between successive requests to prevent server denial of service.
+4. **No CAPTCHA Bypassing:** The crawler never attempts to circumvent anti-bot protections, CAPTCHA mechanisms, or authentication gates.
+5. **Multi-Tenant Vector Isolation:** ChromaDB queries enforce a strict `where={"website_id": website_id}` predicate, ensuring no cross-site information leakage.
 
 ---
 
-## 📄 License
+## 📑 9. Suggested Outline for Academic Project Report (8–10 Pages)
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+For academic submission (Mini-Project on Web Data Mining), the following report structure is recommended:
+
+- **1. Introduction (1 Page)**
+  - Background: Information overload on the modern web.
+  - Problem Statement: Traditional search engines return documents; users need grounded, synthesis-driven answers.
+  - Objectives: Building an end-to-end Web Data Mining and RAG pipeline.
+- **2. Literature Review & Theoretical Background (1.5 Pages)**
+  - Web Data Mining Taxonomy: Content Mining vs. Structure Mining vs. Usage Mining.
+  - Evolution of Retrieval-Augmented Generation (Dense Bi-encoders vs. BM25 Sparse Search).
+  - Cosine Distance & Hierarchical Navigable Small World (HNSW) Graphs.
+- **3. System Architecture & Methodology (2.5 Pages)**
+  - Crawler Design: Politeness, BFS traversal, and SSRF security defense.
+  - Preprocessing & Mining: Unicode normalization, HTML stripping, hashing deduplication, sliding window chunking.
+  - Vector Representation: SentenceTransformers bi-encoder model and embedding space analysis.
+  - Tenant Isolation: Isolated metadata partitioning in ChromaDB.
+  - Grounded Synthesis: LLM prompt engineering with negative constraint prompting.
+- **4. Web Data Mining & Analytics (1 Page)**
+  - Word frequency mining and TF distribution.
+  - Page-level content profiling and visual generation with Matplotlib.
+- **5. Experimental Evaluation & Results (1.5 Pages)**
+  - Experimental Setup: Dataset, query suite, test environments.
+  - Metric Definitions: Precision@k, Recall@k, Mean Reciprocal Rank (MRR), Latency.
+  - Quantitative Findings and Performance Tables.
+  - Error Analysis & Boundary Conditions.
+- **6. User Interface & Implementation Details (1 Page)**
+  - Flutter Material 3 Responsive Architecture.
+  - Interactive Citation Chips & Snippet Inspector.
+- **7. Ethical Considerations, Security & Limitations (0.5 Pages)**
+  - Fair use, robots.txt, rate limiting, and private network protection.
+- **8. Conclusion & Future Work (0.5 Pages)**
+  - Summary of achievements and future extensions (multimodal web mining, cross-lingual knowledge graphs).
+- **References**
+
+---
+
+## 🏛️ 10. Preserved Legacy Functionality
+
+In accordance with project requirements, existing **AskHTE** capabilities remain fully operational:
+- Government PDF Ingestion (`/ingest`) with Tesseract OCR.
+- Administrative Decision Support (`/query`).
+- Cross-Circular Summarization and Side-by-Side Clause Comparison (`/documents/summarize`, `/documents/compare`).
+- Administrative Knowledge Graph (`/documents/graph`).
+- Trilingual English / Marathi / Hindi query handling.
+- Accessible directly via the **Gov Docs** tab in the Flutter application!

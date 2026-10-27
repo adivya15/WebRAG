@@ -36,7 +36,7 @@ class _AtlasAIAppState extends State<AtlasAIApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AskHTE — Government AI Assistant',
+      title: 'WebRAG — Intelligent Website Mining System',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
