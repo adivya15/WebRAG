@@ -1,5 +1,11 @@
 import os
+from pathlib import Path
 import uuid
+from dotenv import load_dotenv
+
+# Load .env file (GROQ_API_KEY, CHROMA_DB_PATH, etc.)
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=_env_path, override=True)
 
 # Force transformers/torch backend and disable TF conflict
 os.environ["USE_TF"] = "0"

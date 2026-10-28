@@ -8,7 +8,7 @@ class ApiConfig {
   /// Defaults to the development laptop's LAN address.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.201.169.154:8000',
+    defaultValue: 'http://10.35.150.154:8000',
   );
 
   /// Connection timeout for all HTTP requests.

@@ -207,10 +207,12 @@ Answer the question grounded strictly in the excerpts above. Include source cita
         final_answer = raw_answer.strip()
         reasoning = f"Generated answer using Groq Llama 3.3 70B grounded in {len(citations)} retrieved passages from {website_id}."
     except Exception as e:
-        # Extractive fallback if Groq API fails or key is missing
+        # Extractive fallback if Groq API fails or key is missing: directly return the snippet cleanly without error banners
         top_snippet = citations[0]["snippet"]
-        final_answer = f"Extractive retrieval fallback (LLM offline: {e}):\n\n{top_snippet}\n\nSource: {citations[0]['url']}"
-        reasoning = "Groq LLM call failed; surfaced highest ranking passage directly."
+        final_answer = top_snippet.strip()
+        reasoning = f"Surfaced highest ranking passage directly from {website_id} (LLM unavailable: {e})."
+
+
 
     total_latency_ms = (time.perf_counter() - total_start) * 1000
     log_query(query, website_id, total_latency_ms, confidence, len(citations))
